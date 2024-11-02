@@ -1,4 +1,5 @@
-"""Main program that executes symulation from Ex. 2"""
+#!/usr/bin/env python
+"""Main program that executes simulation from Ex. 2."""
 
 
 def main():
