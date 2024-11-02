@@ -13,6 +13,7 @@ class Sheep:
             for _ in range(2)
         )
         self.move_dist = move_dist
+        self.caught = False
 
     def move(self) -> None:
         directions: list[tuple[float, float]] = [
@@ -27,8 +28,13 @@ class Sheep:
         self.pos_y += dir_y
 
     def get_position(self) -> tuple[float, float]:
-        print(f"Sheep x: {self.pos_x}, y: {self.pos_y}")
         return self.pos_x, self.pos_y
+
+    def is_cought(self):
+        return self.caught
+
+    def catch(self):
+        self.caught = True
 
 
 class Wolf:
@@ -40,7 +46,7 @@ class Wolf:
         self.chasing = False
         self.chased_sheep = None
 
-    def move(self, sheep_list: list[Sheep]) -> Sheep:
+    def move(self, sheep_list: list[Sheep]) -> Sheep | None:
         closest_sheep, dist = self.closest_sheep(sheep_list)
 
         if dist <= self.move_dist:
@@ -48,16 +54,14 @@ class Wolf:
             return closest_sheep
         else:
             self.chase(closest_sheep, dist)
+            return closest_sheep
 
     def hunt(self, closest_sheep: Sheep) -> None:
         self.pos_x, self.pos_y = closest_sheep.get_position()
-        self.chasing = False
-        self.chased_sheep = None
+        closest_sheep.catch()
 
     def chase(self, closest_sheep: Sheep, dist):
-        self.chasing = True
-        self.chased_sheep = closest_sheep
-        sheep_x, sheep_y = closest_sheep.get_position()  # Pobierz pozycję owcy
+        sheep_x, sheep_y = closest_sheep.get_position()
 
         dir_vector = (sheep_x - self.pos_x, sheep_y - self.pos_y)
 
@@ -75,7 +79,7 @@ class Wolf:
             sheep_x, sheep_y = sheep.get_position()
             euc_dist: float = self.euclidean_dist(sheep_x, sheep_y)
 
-            if euc_dist < min_euc_dist:
+            if euc_dist < min_euc_dist and not sheep.is_cought():
                 min_euc_dist = euc_dist
                 closest_sheep = sheep
 
@@ -85,7 +89,6 @@ class Wolf:
         return ((self.pos_x - sheep_x) ** 2) + ((self.pos_y - sheep_y) ** 2)
 
     def get_position(self) -> tuple[float, float]:
-        print(f"Wolf x: {self.pos_x}, y: {self.pos_y}")
         return self.pos_x, self.pos_y
 
     def get_chased_sheep(self):
