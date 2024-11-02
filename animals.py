@@ -7,7 +7,9 @@ from math import sqrt
 
 
 class Sheep:
-    def __init__(self, init_pos_limit: float = 10.0, move_dist: float = 0.5):
+    def __init__(self, init_pos_limit: float = 10.0,
+                 move_dist: float = 0.5) -> None:
+
         self.pos_x, self.pos_y = (
             uniform(-abs(init_pos_limit), abs(init_pos_limit))
             for _ in range(2)
@@ -30,23 +32,23 @@ class Sheep:
     def get_position(self) -> tuple[float, float]:
         return self.pos_x, self.pos_y
 
-    def is_cought(self):
+    def is_cought(self) -> bool:
         return self.caught
 
-    def catch(self):
+    def catch(self) -> None:
         self.caught = True
 
 
 class Wolf:
     def __init__(self, pos_x: float = 0.0, pos_y: float = 0.0,
-                 move_dist: float = 1.0):
+                 move_dist: float = 1.0) -> None:
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.move_dist = move_dist
         self.chasing = False
         self.chased_sheep = None
 
-    def move(self, sheep_list: list[Sheep]) -> Sheep | None:
+    def move(self, sheep_list: list[Sheep]) -> Sheep:
         closest_sheep, dist = self.closest_sheep(sheep_list)
 
         if dist <= self.move_dist:
@@ -60,7 +62,7 @@ class Wolf:
         self.pos_x, self.pos_y = closest_sheep.get_position()
         closest_sheep.catch()
 
-    def chase(self, closest_sheep: Sheep, dist):
+    def chase(self, closest_sheep: Sheep, dist) -> None:
         sheep_x, sheep_y = closest_sheep.get_position()
 
         dir_vector = (sheep_x - self.pos_x, sheep_y - self.pos_y)
@@ -91,5 +93,3 @@ class Wolf:
     def get_position(self) -> tuple[float, float]:
         return self.pos_x, self.pos_y
 
-    def get_chased_sheep(self):
-        return self.chased_sheep

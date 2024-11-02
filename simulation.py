@@ -8,14 +8,14 @@ from animals import Sheep, Wolf
 class Simulation:
 
     def __init__(self, rounds_number: int = 50, sheep_number: int = 15,
-                 sheep_range: float = 10):
+                 sheep_range: float = 10) -> None:
         self.rounds_number = rounds_number
         self.sheep_number = sheep_number
         self.sheep_list = [Sheep(sheep_range) for _ in range(sheep_number)]
         self.wolf = Wolf()
         self.current_round = 1
 
-    def run(self):
+    def run(self) -> None:
         while self.current_round <= self.rounds_number and self.sheep_list:
             # 1. Moving sheep
             for sheep in self.sheep_list:
@@ -30,13 +30,13 @@ class Simulation:
             # 3. Displaying status
             self.display_status(caught_or_chased_sheep)
 
-            # 4. Saving positions
-            self.save_positions()
+            # 4. Saving data
+            self.save_to_csv()
+            self.save_to_json()
 
-            # Increment round number
             self.current_round += 1
 
-    def display_status(self, caught_or_chased_sheep: Sheep = None):
+    def display_status(self, caught_or_chased_sheep: Sheep = None) -> None:
         wolf_x, wolf_y = self.wolf.get_position()
         print(f"Round: {self.current_round}")
         print(f"Wolf position: {wolf_x: .3f}, {wolf_y: .3f}")
@@ -48,5 +48,8 @@ class Simulation:
             sheep_index = self.sheep_list.index(caught_or_chased_sheep) + 1
             print(f"Sheep {sheep_index} is being chased!")
 
-    def save_positions(self):
+    def save_to_csv(self) -> None:
+        with open()
+
+    def save_to_json(self) -> None:
         pass
