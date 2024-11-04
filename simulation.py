@@ -1,6 +1,10 @@
 """
 This class is responsible for managing whole simulation.
 """
+import configparser
+import os
+
+
 from csv import DictWriter
 from json import dump
 
@@ -9,14 +13,31 @@ from animals import Sheep, Wolf
 
 class Simulation:
 
-    def __init__(self, rounds_number: int = 50, sheep_number: int = 15,
-                 sheep_range: float = 10,
+    def __init__(self, rounds_number: int, sheep_number: int,
+                 do_wait: bool, config_path: str = None,
                  csv_path: str = "alive.csv",
                  json_path: str = "pos.json") -> None:
+
+        sheep_range = 10.0
+        mv_dist_sheep = 0.5
+        mv_dist_wolf = 1.0
+
+        if config_path and os.path.isfile(config_path):
+            config = configparser.ConfigParser()
+            config.read(config_path)
+            sheep_range = config.getfloat("Sheep", "InitPosLimit",
+                                          fallback=10.0)
+            mv_dist_sheep = config.getfloat("Sheep", "MoveDist",
+                                            fallback=0.5)
+            mv_dist_wolf = config.getfloat("Wolf", "MoveDist",
+                                           fallback=1.0)
+
         self.rounds_number = rounds_number
         self.sheep_number = sheep_number
-        self.sheep_list = [Sheep(sheep_range) for _ in range(sheep_number)]
-        self.wolf = Wolf()
+        self.do_wait = do_wait
+        self.sheep_list = [Sheep(sheep_range, mv_dist_sheep) for _ in
+                           range(sheep_number)]
+        self.wolf = Wolf(move_dist=mv_dist_wolf)
         self.current_round = 1
         self.csv_path = csv_path
         self.json_path = json_path
@@ -35,7 +56,8 @@ class Simulation:
             json_file.write("[")  # Start a JSON list
 
     def run(self) -> None:
-        while self.current_round <= self.rounds_number and self.sheep_list:
+        while (self.current_round <= self.rounds_number
+               and self.sheep_number > 0):
             # 1. Moving sheep
             for sheep in self.sheep_list:
                 sheep.move()
@@ -54,6 +76,9 @@ class Simulation:
             self.save_to_json()
 
             self.current_round += 1
+
+            if self.do_wait:
+                os.system('pause')
 
         # Close JSON array after all rounds
         self.finalize_json()

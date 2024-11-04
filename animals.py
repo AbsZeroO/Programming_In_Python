@@ -11,7 +11,7 @@ class Sheep:
                  move_dist: float = 0.5) -> None:
 
         self.pos_x, self.pos_y = (
-            uniform(-abs(init_pos_limit), abs(init_pos_limit))
+            uniform(-init_pos_limit, abs(init_pos_limit))
             for _ in range(2)
         )
         self.move_dist = move_dist
@@ -19,10 +19,10 @@ class Sheep:
 
     def move(self) -> None:
         directions: list[tuple[float, float]] = [
-            (self.move_dist, 0.0),  # right
-            (-self.move_dist, 0.0),  # left
-            (0.0, self.move_dist),  # up
-            (0.0, -self.move_dist)  # down
+            (self.move_dist, 0.0),  # w
+            (-self.move_dist, 0.0),  # e
+            (0.0, self.move_dist),  # n
+            (0.0, -self.move_dist)  # s
         ]
 
         dir_x, dir_y = choice(directions)
