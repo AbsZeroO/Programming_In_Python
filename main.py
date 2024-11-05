@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Main program that executes simulation from Ex. 2."""
+import logging
 import os
 import argparse
 
@@ -60,14 +61,20 @@ def arg_parser():
     return args
 
 
+
+
+
 def main():
     args = arg_parser()
+
     simulation = Simulation(
         rounds_number=args.rounds,
         sheep_number=args.sheep,
         do_wait=args.wait,
-        config_path=args.config
+        config_path=args.config,
+        log_lvl=args.log
     )
+
     simulation.run()
 
 

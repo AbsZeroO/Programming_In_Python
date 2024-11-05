@@ -1,14 +1,17 @@
 """
 This file is responsible for animals entity like sheep and wolf.
 """
-
+import logging
 from random import uniform, choice
 from math import sqrt
+from typing import Tuple
 
 
 class Sheep:
-    def __init__(self, init_pos_limit: float = 10.0,
-                 move_dist: float = 0.5) -> None:
+    def __init__(self,
+                 init_pos_limit: float = 10.0,
+                 move_dist: float = 0.5
+                 ) -> None:
 
         self.pos_x, self.pos_y = (
             uniform(-init_pos_limit, abs(init_pos_limit))
@@ -17,17 +20,18 @@ class Sheep:
         self.move_dist = move_dist
         self.caught = False
 
-    def move(self) -> None:
-        directions: list[tuple[float, float]] = [
-            (self.move_dist, 0.0),  # w
-            (-self.move_dist, 0.0),  # e
-            (0.0, self.move_dist),  # n
-            (0.0, -self.move_dist)  # s
-        ]
-
-        dir_x, dir_y = choice(directions)
-        self.pos_x += dir_x
-        self.pos_y += dir_y
+    def move(self) -> str:
+        direction = choice(["n", "s", "e", "w"])  # north south east west
+        match direction:
+            case "n":
+                self.pos_y += self.move_dist
+            case "s":
+                self.pos_y -= self.move_dist
+            case "e":
+                self.pos_x += self.move_dist
+            case "w":
+                self.pos_x -= self.move_dist
+        return direction
 
     def get_position(self) -> tuple[float, float]:
         return self.pos_x, self.pos_y
@@ -40,8 +44,11 @@ class Sheep:
 
 
 class Wolf:
-    def __init__(self, pos_x: float = 0.0, pos_y: float = 0.0,
-                 move_dist: float = 1.0) -> None:
+    def __init__(self,
+                 pos_x: float = 0.0,
+                 pos_y: float = 0.0,
+                 move_dist: float = 1.0
+                 ) -> None:
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.move_dist = move_dist
@@ -53,16 +60,22 @@ class Wolf:
 
         if dist <= self.move_dist:
             self.hunt(closest_sheep)
+            logging.debug(f"Wolf's new position {self.get_position()}")
             return closest_sheep
         else:
             self.chase(closest_sheep, dist)
+            logging.debug(f"Wolf's new position {self.get_position()}")
             return closest_sheep
 
-    def hunt(self, closest_sheep: Sheep) -> None:
+    def hunt(self,
+             closest_sheep: Sheep
+             ) -> None:
         self.pos_x, self.pos_y = closest_sheep.get_position()
         closest_sheep.catch()
 
-    def chase(self, closest_sheep: Sheep, dist) -> None:
+    def chase(self,
+              closest_sheep: Sheep,
+              dist: float) -> None:
         sheep_x, sheep_y = closest_sheep.get_position()
 
         dir_vector = (sheep_x - self.pos_x, sheep_y - self.pos_y)
@@ -73,7 +86,9 @@ class Wolf:
             self.pos_x += unit_vector[0] * self.move_dist
             self.pos_y += unit_vector[1] * self.move_dist
 
-    def closest_sheep(self, sheep_list: list[Sheep]) -> tuple[Sheep, float]:
+    def closest_sheep(self,
+                      sheep_list: list[Sheep]
+                      ) -> tuple[Sheep, float]:
         closest_sheep = None
         min_euc_dist: float = float("inf")
 
@@ -87,7 +102,10 @@ class Wolf:
 
         return closest_sheep, sqrt(min_euc_dist)
 
-    def euclidean_dist(self, sheep_x: float, sheep_y: float) -> float:
+    def euclidean_dist(self,
+                       sheep_x: float,
+                       sheep_y: float
+                       ) -> float:
         return ((self.pos_x - sheep_x) ** 2) + ((self.pos_y - sheep_y) ** 2)
 
     def get_position(self) -> tuple[float, float]:

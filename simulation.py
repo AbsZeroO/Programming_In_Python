@@ -2,8 +2,8 @@
 This class is responsible for managing whole simulation.
 """
 import configparser
+import logging
 import os
-
 
 from csv import DictWriter
 from json import dump
@@ -12,11 +12,30 @@ from animals import Sheep, Wolf
 
 
 class Simulation:
+    LOG_LVL_MAP = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL
+    }
 
-    def __init__(self, rounds_number: int, sheep_number: int,
-                 do_wait: bool, config_path: str = None,
+    def __init__(self,
+                 rounds_number: int,
+                 sheep_number: int,
+                 do_wait: bool,
+                 config_path: str = None,
+                 log_lvl: str = None,
                  csv_path: str = "alive.csv",
-                 json_path: str = "pos.json") -> None:
+                 json_path: str = "pos.json"
+                 ) -> None:
+
+        logging.basicConfig(
+            filename="chase.log",
+            filemode="w",
+            level=self.LOG_LVL_MAP.get(log_lvl),
+            format="%(asctime)s - %(levelname)s - %(message)s"
+        )
 
         sheep_range = 10.0
         mv_dist_sheep = 0.5
@@ -31,12 +50,19 @@ class Simulation:
                                             fallback=0.5)
             mv_dist_wolf = config.getfloat("Wolf", "MoveDist",
                                            fallback=1.0)
+            logging.debug(
+                f"Loaded configuration values: sheep_range={sheep_range}, "
+                f"mv_dist_sheep={mv_dist_sheep}, mv_dist_wolf={mv_dist_wolf}")
 
         self.rounds_number = rounds_number
         self.sheep_number = sheep_number
         self.do_wait = do_wait
         self.sheep_list = [Sheep(sheep_range, mv_dist_sheep) for _ in
                            range(sheep_number)]
+
+        for i, sheep in enumerate(self.sheep_list, start=1):
+            logging.debug(f"Sheep {i}, position: {sheep.get_position()}")
+
         self.wolf = Wolf(move_dist=mv_dist_wolf)
         self.current_round = 1
         self.csv_path = csv_path
@@ -59,11 +85,18 @@ class Simulation:
         while (self.current_round <= self.rounds_number
                and self.sheep_number > 0):
             # 1. Moving sheep
-            for sheep in self.sheep_list:
-                sheep.move()
+            for i, sheep in enumerate(self.sheep_list, start=1):
+                if not sheep.is_cought():
+                    logging.debug(f"Sheep {i}, direction {sheep.move()}")
 
             # 2. Moving wolf and checking for caught sheep
-            caught_or_chased_sheep = self.wolf.move(self.sheep_list)
+            caught_or_chased_sheep, dist = (
+                self.wolf.closest_sheep(self.sheep_list))
+            logging.debug(
+                f"Closest sheep is {self.sheep_list.index(
+                    caught_or_chased_sheep) + 1} and distans = {dist}")
+
+            self.wolf.move(self.sheep_list)
 
             if caught_or_chased_sheep.is_cought():
                 self.sheep_number -= 1
@@ -83,7 +116,9 @@ class Simulation:
         # Close JSON array after all rounds
         self.finalize_json()
 
-    def display_status(self, caught_or_chased_sheep: Sheep = None) -> None:
+    def display_status(self,
+                       caught_or_chased_sheep: Sheep
+                       ) -> None:
         wolf_x, wolf_y = self.wolf.get_position()
         print(f"Round: {self.current_round}")
         print(f"Wolf position: {wolf_x: .3f}, {wolf_y: .3f}")
@@ -104,6 +139,7 @@ class Simulation:
                 "round_no": self.current_round,
                 "sheep_c": self.sheep_number
             })
+        logging.debug("Round save to .csv")
 
     def save_to_json(self) -> None:
         with open(self.json_path, "a") as json_file:
@@ -115,9 +151,10 @@ class Simulation:
             }
             dump(data, json_file, indent=2)
 
-            # Add a comma after each round except the last one
             if self.current_round < self.rounds_number:
                 json_file.write(",")
+
+            logging.debug("Round save to .json")
 
     def finalize_json(self) -> None:
         with open(self.json_path, "a") as json_file:
