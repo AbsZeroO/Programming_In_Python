@@ -61,7 +61,9 @@ class Simulation:
                            range(sheep_number)]
 
         for i, sheep in enumerate(self.sheep_list, start=1):
-            logging.debug(f"Sheep {i}, position: {sheep.get_position()}")
+            logging.debug(f"Sheep {i}, init position: {sheep.get_position()}")
+
+        logging.info(f"Sheep init position determined")
 
         self.wolf = Wolf(move_dist=mv_dist_wolf)
         self.current_round = 1
@@ -82,16 +84,19 @@ class Simulation:
             json_file.write("[")  # Start a JSON list
 
     def run(self) -> None:
-        while (self.current_round <= self.rounds_number
-               and self.sheep_number > 0):
+        while (True):
+            logging.info(f"Round number {self.current_round} started.")
             # 1. Moving sheep
             for i, sheep in enumerate(self.sheep_list, start=1):
                 if not sheep.is_cought():
                     logging.debug(f"Sheep {i}, direction {sheep.move()}")
 
+            logging.info("All alive sheep moved.")
+
             # 2. Moving wolf and checking for caught sheep
             caught_or_chased_sheep, dist = (
                 self.wolf.closest_sheep(self.sheep_list))
+
             logging.debug(
                 f"Closest sheep is {self.sheep_list.index(
                     caught_or_chased_sheep) + 1} and distans = {dist}")
@@ -99,7 +104,19 @@ class Simulation:
             self.wolf.move(self.sheep_list)
 
             if caught_or_chased_sheep.is_cought():
+                logging.info(
+                    f"Wolf eaten the Sheep "
+                    f"{self.sheep_list.index(caught_or_chased_sheep) + 1}")
+            else:
+                logging.info(
+                    f"Wolf is chasing the Sheep "
+                    f"{self.sheep_list.index(caught_or_chased_sheep) + 1}")
+
+            if caught_or_chased_sheep.is_cought():
                 self.sheep_number -= 1
+
+            logging.info(f"End of round {self.current_round}, "
+                         f"alive sheep {self.sheep_number}")
 
             # 3. Displaying status
             self.display_status(caught_or_chased_sheep)
@@ -113,7 +130,13 @@ class Simulation:
             if self.do_wait:
                 os.system('pause')
 
-        # Close JSON array after all rounds
+            if self.current_round > self.rounds_number:
+                logging.info("Simulation ended because of rounds")
+                break
+            elif self.sheep_number == 0:
+                logging.info("Simulation ended because of sheep")
+                break
+
         self.finalize_json()
 
     def display_status(self,

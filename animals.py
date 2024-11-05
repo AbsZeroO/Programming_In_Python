@@ -55,17 +55,17 @@ class Wolf:
         self.chasing = False
         self.chased_sheep = None
 
-    def move(self, sheep_list: list[Sheep]) -> Sheep:
+    def move(self, sheep_list: list[Sheep]) -> None:
         closest_sheep, dist = self.closest_sheep(sheep_list)
 
         if dist <= self.move_dist:
             self.hunt(closest_sheep)
             logging.debug(f"Wolf's new position {self.get_position()}")
-            return closest_sheep
         else:
             self.chase(closest_sheep, dist)
             logging.debug(f"Wolf's new position {self.get_position()}")
-            return closest_sheep
+
+        logging.info("Wolf moved position.")
 
     def hunt(self,
              closest_sheep: Sheep
