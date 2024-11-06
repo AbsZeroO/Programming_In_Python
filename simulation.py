@@ -63,7 +63,7 @@ class Simulation:
         for i, sheep in enumerate(self.sheep_list, start=1):
             logging.debug(f"Sheep {i}, init position: {sheep.get_position()}")
 
-        logging.info(f"Sheep init position determined")
+        logging.info(f"ALL sheep init position determined")
 
         self.wolf = Wolf(move_dist=mv_dist_wolf)
         self.current_round = 1
@@ -169,12 +169,14 @@ class Simulation:
             data = {
                 "round_no": self.current_round,
                 "wolf_pos": self.wolf.get_position(),
-                "sheep_pos": [sheep.get_position() for sheep in self.sheep_list
+                "sheep_pos": [sheep.get_position() for sheep in
+                              self.sheep_list
                               if not sheep.is_cought()],
             }
             dump(data, json_file, indent=2)
 
-            if self.current_round < self.rounds_number:
+            if (self.current_round < self.rounds_number
+                    and self.sheep_number > 0):
                 json_file.write(",")
 
             logging.debug("Round save to .json")

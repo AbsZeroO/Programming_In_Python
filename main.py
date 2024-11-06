@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Main program that executes simulation from Ex. 2."""
-import logging
+
 import os
 import argparse
 
@@ -59,9 +59,6 @@ def arg_parser():
     arg_validator(args)
 
     return args
-
-
-
 
 
 def main():
